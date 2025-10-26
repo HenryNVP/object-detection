@@ -1,0 +1,31 @@
+# Knowledge Distillation Configuration for DINO-DETR
+
+# Dataset configuration
+data:
+  root: "./kitti_coco"
+  num_labels: 4  # car, person, bicycle + background
+  batch_size: 4
+  num_workers: 4
+
+# Model configuration
+model:
+  teacher: "IDEA-Research/dino-detr-resnet-50"
+  student: "IDEA-Research/dino-detr-resnet-50"
+
+# Training configuration
+training:
+  epochs: 10
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-4
+  save_every: 1
+
+# Distillation configuration
+distillation:
+  temperature: 2.0
+  alpha: 0.5  # Weight for student loss (1-alpha for distillation loss)
+
+# Other configuration
+output_dir: "./output/distillation"
+seed: 42
+device: null  # auto-detect
+
