@@ -1,13 +1,13 @@
-# DINO-DETR Knowledge Distillation for Object Detection
+# DETR Knowledge Distillation for Object Detection
 
-This repository provides a modular implementation for training distilled DINO-DETR models on the KITTI dataset using knowledge distillation.
+This repository provides a modular implementation for training distilled DETR models on the KITTI dataset using knowledge distillation.
 
 ## Features
 
 - ✅ Modular design with reusable components
 - ✅ Knowledge distillation for object detection
 - ✅ Support for KITTI dataset in COCO format
-- ✅ DINO-DETR model support via Hugging Face Transformers
+- ✅ DETR model support via Hugging Face Transformers
 - ✅ Easy-to-use training and evaluation scripts
 - ✅ Configurable via command line or YAML files
 
@@ -56,8 +56,8 @@ python train_distillation.py --data-root ./kitti_coco
 # Custom configuration
 python train_distillation.py \
     --data-root ./kitti_coco \
-    --teacher-model IDEA-Research/dino-detr-resnet-50 \
-    --student-model IDEA-Research/dino-detr-resnet-50 \
+    --teacher-model facebook/detr-resnet-50 \
+    --student-model facebook/detr-resnet-50 \
     --epochs 20 \
     --batch-size 4 \
     --lr 1e-4 \
@@ -87,7 +87,7 @@ object-detection/
 │   │   └── kitti_coco.py  # KITTI COCO dataset
 │   ├── models/            # Model builders
 │   │   ├── __init__.py
-│   │   └── dino_detr.py   # DINO-DETR models
+│   │   └── detr.py        # DETR models
 │   ├── distillation/      # Distillation modules
 │   │   ├── __init__.py
 │   │   ├── losses.py      # Distillation losses
@@ -140,8 +140,8 @@ object-detection/
 
 The implementation uses standard knowledge distillation techniques for object detection:
 
-1. **Teacher Model**: Pre-trained DINO-DETR model (frozen)
-2. **Student Model**: Smaller or randomly initialized DINO-DETR model
+1. **Teacher Model**: Pre-trained DETR model (frozen)
+2. **Student Model**: Smaller or randomly initialized DETR model
 3. **Loss Function**: 
    ```
    L_total = α * L_student + (1 - α) * L_distillation
@@ -190,12 +190,12 @@ python eval_distillation.py \
 
 ## Model Zoo
 
-You can use different DINO-DETR variants as teacher/student:
+You can use different DETR variants as teacher/student:
 
 | Model | Parameters | Use Case |
 |-------|------------|----------|
-| `IDEA-Research/dino-detr-resnet-50` | ~41M | Balanced performance |
-| `facebook/detr-resnet-50` | ~41M | Alternative backbone |
+| `facebook/detr-resnet-50` | ~41M | Standard DETR (recommended) |
+| `facebook/detr-resnet-101` | ~60M | Larger teacher for better knowledge |
 
 ## Customization
 
@@ -206,7 +206,7 @@ You can use different DINO-DETR variants as teacher/student:
 from src.models import build_teacher_student_models
 
 teacher, student, processor = build_teacher_student_models(
-    teacher_model_name="IDEA-Research/dino-detr-resnet-50",
+    teacher_model_name="facebook/detr-resnet-50",
     student_model_name="facebook/detr-resnet-50",
     num_labels=4,
     device="cuda"
@@ -272,14 +272,16 @@ loss_fn = DistillationLoss(
 
 ## Citation
 
-If you use this code, please cite the original DINO-DETR paper:
+If you use this code, please cite the original DETR paper:
 
 ```bibtex
-@article{zhang2022dino,
-  title={DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object Detection},
-  author={Zhang, Hao and Li, Feng and Liu, Shilong and Zhang, Lei and Su, Hang and Zhu, Jun and Ni, Lionel and Shum, Heung-Yeung},
-  journal={arXiv preprint arXiv:2203.03605},
-  year={2022}
+@inproceedings{carion2020end,
+  title={End-to-end object detection with transformers},
+  author={Carion, Nicolas and Massa, Francisco and Synnaeve, Gabriel and Usunier, Nicolas and Kirillov, Alexander and Zagoruyko, Sergey},
+  booktitle={European conference on computer vision},
+  pages={213--229},
+  year={2020},
+  organization={Springer}
 }
 ```
 

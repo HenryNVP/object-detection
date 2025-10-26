@@ -1,4 +1,4 @@
-"""Evaluate distilled DINO-DETR model on KITTI dataset."""
+"""Evaluate distilled DETR model on KITTI dataset."""
 
 from __future__ import annotations
 
@@ -13,14 +13,14 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.datasets import build_kitti_coco_dataset, collate_fn
-from src.models import build_dino_detr
+from src.models import build_detr
 from src.utils.device import get_device
 
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Evaluate distilled DINO-DETR on KITTI"
+        description="Evaluate distilled DETR on KITTI"
     )
     
     parser.add_argument(
@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model-name",
         type=str,
-        default="IDEA-Research/dino-detr-resnet-50",
+        default="facebook/detr-resnet-50",
         help="Model name from Hugging Face",
     )
     parser.add_argument(
@@ -182,7 +182,7 @@ def main():
     
     # Load model
     print("Loading model...")
-    model, _ = build_dino_detr(
+    model, _ = build_detr(
         model_name=args.model_name,
         num_labels=args.num_labels,
         pretrained=False,

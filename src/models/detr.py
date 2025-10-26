@@ -1,4 +1,4 @@
-"""DINO-DETR model builders for object detection."""
+"""DETR model builders for object detection."""
 
 from __future__ import annotations
 
@@ -9,13 +9,13 @@ import torch.nn as nn
 from transformers import AutoImageProcessor, AutoModelForObjectDetection
 
 
-def build_dino_detr(
-    model_name: str = "IDEA-Research/dino-detr-resnet-50",
+def build_detr(
+    model_name: str = "facebook/detr-resnet-50",
     num_labels: int = 4,
     pretrained: bool = True,
     device: str = "cuda",
 ) -> Tuple[nn.Module, AutoImageProcessor]:
-    """Build DINO-DETR model for object detection.
+    """Build DETR model for object detection.
     
     Args:
         model_name: Hugging Face model name
@@ -47,8 +47,8 @@ def build_dino_detr(
 
 
 def build_teacher_student_models(
-    teacher_model_name: str = "IDEA-Research/dino-detr-resnet-50",
-    student_model_name: str = "IDEA-Research/dino-detr-resnet-50",
+    teacher_model_name: str = "facebook/detr-resnet-50",
+    student_model_name: str = "facebook/detr-resnet-50",
     num_labels: int = 4,
     device: str = "cuda",
 ) -> Tuple[nn.Module, nn.Module, AutoImageProcessor]:

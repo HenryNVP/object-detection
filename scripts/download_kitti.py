@@ -25,7 +25,6 @@ KITTI_URLS = {
 
 class DownloadProgressBar(tqdm):
     """Progress bar for download."""
-    
     def update_to(self, b=1, bsize=1, tsize=None):
         if tsize is not None:
             self.total = tsize
@@ -33,12 +32,7 @@ class DownloadProgressBar(tqdm):
 
 
 def download_file(url: str, output_path: Path) -> None:
-    """Download a file with progress bar.
-    
-    Args:
-        url: URL to download
-        output_path: Output file path
-    """
+    """Download a file with progress bar."""
     with DownloadProgressBar(unit='B', unit_scale=True, miniters=1, desc=output_path.name) as t:
         urlretrieve(url, filename=output_path, reporthook=t.update_to)
 
@@ -53,11 +47,6 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default="./kitti_data",
         help="Output directory for downloaded data",
-    )
-    parser.add_argument(
-        "--skip-existing",
-        action="store_true",
-        help="Skip downloading if files already exist",
     )
     parser.add_argument(
         "--no-velodyne",
@@ -87,43 +76,25 @@ def main():
         filename = url.split("/")[-1]
         filepath = Path(filename)
         
-        # Check if file exists
-        if args.skip_existing and filepath.exists():
-            print(f"⏭️  Skipping {name} (already exists)")
-            continue
-        
         # Download
         if not filepath.exists():
-            print(f"📥 Downloading {name}...")
+            print(f"Downloading {name}...")
             try:
                 download_file(url, filepath)
             except Exception as e:
-                print(f"❌ Error downloading {name}: {e}")
+                print(f"Error downloading {name}: {e}")
                 continue
         
-        # Extract
-        print(f"📦 Extracting {name}...")
         try:
             with zipfile.ZipFile(filepath, 'r') as zip_ref:
                 zip_ref.extractall()
-            print(f"✅ Extracted {name}")
+            print(f"Extracted {name}")
         except Exception as e:
-            print(f"❌ Error extracting {name}: {e}")
+            print(f"Error extracting {name}: {e}")
         
         print()
     
     print("✅ Download complete!")
-    print()
-    print("Directory structure:")
-    print(f"{args.output_dir}/")
-    print("  └── training/")
-    print("      ├── image_2/     # Images")
-    print("      ├── label_2/     # Labels")
-    print("      └── calib/       # Calibration files")
-    print()
-    print("Next steps:")
-    print("  1. Run prepare_kitti_coco.py to convert to COCO format")
-    print("  2. Train your model with train_distillation.py")
 
 
 if __name__ == "__main__":

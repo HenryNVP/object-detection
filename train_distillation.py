@@ -1,4 +1,4 @@
-"""Train DINO-DETR with knowledge distillation on KITTI dataset."""
+"""Train DETR with knowledge distillation on KITTI dataset."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from src.utils.seed import seed_all
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Train DINO-DETR with knowledge distillation on KITTI"
+        description="Train DETR with knowledge distillation on KITTI"
     )
     
     # Data arguments
@@ -46,13 +46,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--teacher-model",
         type=str,
-        default="IDEA-Research/dino-detr-resnet-50",
+        default="facebook/detr-resnet-50",
         help="Teacher model name from Hugging Face",
     )
     parser.add_argument(
         "--student-model",
         type=str,
-        default="IDEA-Research/dino-detr-resnet-50",
+        default="facebook/detr-resnet-50",
         help="Student model name from Hugging Face",
     )
     parser.add_argument(
