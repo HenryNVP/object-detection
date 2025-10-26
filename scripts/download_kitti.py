@@ -63,7 +63,6 @@ def main():
     print("KITTI Object Detection Dataset Downloader")
     print("-" * 50)
     print(f"Output directory: {args.output_dir}")
-    print(f"Skip existing: {args.skip_existing}")
     print("-" * 50)
     print()
     

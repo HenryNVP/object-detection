@@ -38,6 +38,7 @@ class DistillationTrainer:
         distillation_loss: DistillationLoss,
         device: str = "cuda",
         output_dir: Path | str = "./output/distillation",
+        image_processor=None,
     ):
         self.teacher_model = teacher_model
         self.student_model = student_model
@@ -48,6 +49,7 @@ class DistillationTrainer:
         self.device = device
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.image_processor = image_processor
         
         # Set teacher to eval mode
         self.teacher_model.eval()
@@ -72,22 +74,39 @@ class DistillationTrainer:
         
         pbar = tqdm(self.train_loader, desc=f"Epoch {epoch}")
         for images, targets in pbar:
-            # Move to device
-            images = [img.to(self.device) for img in images]
-            targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+            # Process images with DETR image processor if available
+            if self.image_processor is not None:
+                # Images are PIL Images, process them
+                inputs = self.image_processor(images=images, return_tensors="pt")
+                pixel_values = inputs["pixel_values"].to(self.device)
+            else:
+                # Images are already tensors
+                pixel_values = torch.stack([img.to(self.device) for img in images])
+            
+            # Move targets to device and add orig_size for DETR
+            processed_targets = []
+            for i, target in enumerate(targets):
+                t = {k: v.to(self.device) for k, v in target.items()}
+                # Add orig_size if not present (needed for DETR)
+                if "orig_size" not in t and self.image_processor is not None:
+                    # Get original image size from PIL image
+                    if hasattr(images[i], 'size'):  # PIL Image
+                        w, h = images[i].size
+                        t["orig_size"] = torch.tensor([h, w]).to(self.device)
+                processed_targets.append(t)
             
             # Forward pass - teacher
             with torch.no_grad():
-                teacher_outputs = self.teacher_model(images)
+                teacher_outputs = self.teacher_model(pixel_values=pixel_values)
             
             # Forward pass - student
-            student_outputs = self.student_model(images, labels=targets)
+            student_outputs = self.student_model(pixel_values=pixel_values, labels=processed_targets)
             
             # Compute distillation loss
             loss_dict = self.distillation_loss(
                 student_outputs=student_outputs,
                 teacher_outputs=teacher_outputs,
-                targets=targets,
+                targets=processed_targets,
             )
             
             loss = loss_dict["loss"]
@@ -133,12 +152,29 @@ class DistillationTrainer:
         
         pbar = tqdm(self.val_loader, desc="Validation")
         for images, targets in pbar:
-            # Move to device
-            images = [img.to(self.device) for img in images]
-            targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+            # Process images with DETR image processor if available
+            if self.image_processor is not None:
+                # Images are PIL Images, process them
+                inputs = self.image_processor(images=images, return_tensors="pt")
+                pixel_values = inputs["pixel_values"].to(self.device)
+            else:
+                # Images are already tensors
+                pixel_values = torch.stack([img.to(self.device) for img in images])
+            
+            # Move targets to device and add orig_size for DETR
+            processed_targets = []
+            for i, target in enumerate(targets):
+                t = {k: v.to(self.device) for k, v in target.items()}
+                # Add orig_size if not present (needed for DETR)
+                if "orig_size" not in t and self.image_processor is not None:
+                    # Get original image size from PIL image
+                    if hasattr(images[i], 'size'):  # PIL Image
+                        w, h = images[i].size
+                        t["orig_size"] = torch.tensor([h, w]).to(self.device)
+                processed_targets.append(t)
             
             # Forward pass
-            outputs = self.student_model(images, labels=targets)
+            outputs = self.student_model(pixel_values=pixel_values, labels=processed_targets)
             loss = outputs.get("loss", torch.tensor(0.0))
             
             total_loss += loss.item()

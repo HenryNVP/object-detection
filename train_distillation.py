@@ -230,6 +230,7 @@ def main():
         distillation_loss=distillation_loss,
         device=device,
         output_dir=args.output_dir,
+        image_processor=image_processor,
     )
     
     # Train
