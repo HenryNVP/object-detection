@@ -20,21 +20,27 @@ from tqdm import tqdm
 
 # KITTI to COCO category mapping
 KITTI_TO_COCO = {
-    "Car": 0,
-    "Van": 0,  # Map Van to Car
-    "Truck": 0,  # Map Truck to Car
-    "Pedestrian": 1,
-    "Person_sitting": 1,
-    "Cyclist": 2,
-    "Tram": 0,
-    "Misc": 0,
+    "Car": "car",
+    "Van": "car",
+    "Truck": "truck",
+    "Pedestrian": "person",
+    "Person_sitting": "person",
+    "Cyclist": "bicycle",
+    "Tram": "train",
+    "Misc": "other",
 }
 
 COCO_CATEGORIES = [
-    {"id": 1, "name": "car"},
-    {"id": 2, "name": "person"},
-    {"id": 3, "name": "bicycle"},
+    {"id": 1, "name": "person"},
+    {"id": 2, "name": "car"},
+    {"id": 3, "name": "truck"},
+    {"id": 4, "name": "bicycle"},
+    {"id": 5, "name": "train"},
+    {"id": 6, "name": "other"},
 ]
+
+# Create name to ID mapping for easy lookup
+CAT_NAME_TO_ID = {cat["name"]: cat["id"] for cat in COCO_CATEGORIES}
 
 
 def parse_args() -> argparse.Namespace:
@@ -172,8 +178,8 @@ def convert_to_coco(
                 continue
             
             # Get COCO category ID
-            coco_cat_idx = KITTI_TO_COCO[obj_type]
-            coco_cat_id = coco_cat_idx + 1  # COCO IDs start from 1
+            coco_cat_name = KITTI_TO_COCO[obj_type]
+            coco_cat_id = CAT_NAME_TO_ID[coco_cat_name]
             
             # Get bounding box [x1, y1, x2, y2]
             x1, y1, x2, y2 = obj["bbox"]
