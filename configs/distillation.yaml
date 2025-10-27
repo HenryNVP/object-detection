@@ -3,7 +3,7 @@
 # Dataset configuration
 data:
   root: "./kitti_coco"
-  num_labels: 4  # car, person, bicycle + background
+  num_labels: 6  # person, car, truck, bicycle, train, other
   batch_size: 4
   num_workers: 4
 
