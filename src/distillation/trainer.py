@@ -56,6 +56,54 @@ class DistillationTrainer:
         for param in self.teacher_model.parameters():
             param.requires_grad = False
     
+    def _convert_targets_to_detr_format(self, images, targets):
+        """Convert dataset targets to DETR format.
+        
+        Args:
+            images: List of PIL images or tensors
+            targets: List of target dicts from dataset
+            
+        Returns:
+            List of processed targets in DETR format
+        """
+        processed_targets = []
+        for i, target in enumerate(targets):
+            t = {}
+            
+            # Get image dimensions
+            if hasattr(images[i], 'size'):  # PIL Image
+                w_img, h_img = images[i].size
+            else:
+                # Assume tensor with shape [C, H, W]
+                h_img, w_img = images[i].shape[-2:]
+            
+            for k, v in target.items():
+                if k == 'labels':
+                    # DETR expects 'class_labels' instead of 'labels'
+                    t['class_labels'] = v.to(self.device)
+                elif k == 'boxes':
+                    # Convert boxes from [x1, y1, x2, y2] to normalized [cx, cy, w, h]
+                    boxes = v.to(self.device)
+                    if len(boxes) > 0:
+                        x1, y1, x2, y2 = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
+                        cx = (x1 + x2) / 2.0 / w_img
+                        cy = (y1 + y2) / 2.0 / h_img
+                        w = (x2 - x1) / w_img
+                        h = (y2 - y1) / h_img
+                        t['boxes'] = torch.stack([cx, cy, w, h], dim=1)
+                    else:
+                        t['boxes'] = boxes
+                else:
+                    t[k] = v.to(self.device) if isinstance(v, torch.Tensor) else v
+            
+            # Add orig_size (needed for DETR)
+            if "orig_size" not in t:
+                t["orig_size"] = torch.tensor([h_img, w_img]).to(self.device)
+            
+            processed_targets.append(t)
+        
+        return processed_targets
+    
     def train_epoch(self, epoch: int) -> Dict[str, float]:
         """Train for one epoch.
         
@@ -83,17 +131,8 @@ class DistillationTrainer:
                 # Images are already tensors
                 pixel_values = torch.stack([img.to(self.device) for img in images])
             
-            # Move targets to device and add orig_size for DETR
-            processed_targets = []
-            for i, target in enumerate(targets):
-                t = {k: v.to(self.device) for k, v in target.items()}
-                # Add orig_size if not present (needed for DETR)
-                if "orig_size" not in t and self.image_processor is not None:
-                    # Get original image size from PIL image
-                    if hasattr(images[i], 'size'):  # PIL Image
-                        w, h = images[i].size
-                        t["orig_size"] = torch.tensor([h, w]).to(self.device)
-                processed_targets.append(t)
+            # Convert targets to DETR format
+            processed_targets = self._convert_targets_to_detr_format(images, targets)
             
             # Forward pass - teacher
             with torch.no_grad():
@@ -161,17 +200,8 @@ class DistillationTrainer:
                 # Images are already tensors
                 pixel_values = torch.stack([img.to(self.device) for img in images])
             
-            # Move targets to device and add orig_size for DETR
-            processed_targets = []
-            for i, target in enumerate(targets):
-                t = {k: v.to(self.device) for k, v in target.items()}
-                # Add orig_size if not present (needed for DETR)
-                if "orig_size" not in t and self.image_processor is not None:
-                    # Get original image size from PIL image
-                    if hasattr(images[i], 'size'):  # PIL Image
-                        w, h = images[i].size
-                        t["orig_size"] = torch.tensor([h, w]).to(self.device)
-                processed_targets.append(t)
+            # Convert targets to DETR format
+            processed_targets = self._convert_targets_to_detr_format(images, targets)
             
             # Forward pass
             outputs = self.student_model(pixel_values=pixel_values, labels=processed_targets)
