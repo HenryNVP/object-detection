@@ -4,7 +4,7 @@
 data:
   root: "./kitti_coco"
   num_labels: 6  # person, car, truck, bicycle, train, other
-  batch_size: 4
+  batch_size: 20
   num_workers: 4
 
 # Model configuration

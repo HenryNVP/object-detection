@@ -80,7 +80,8 @@ class DistillationTrainer:
             for k, v in target.items():
                 if k == 'labels':
                     # DETR expects 'class_labels' instead of 'labels'
-                    t['class_labels'] = v.to(self.device)
+                    # Convert from 1-indexed (COCO) to 0-indexed (DETR)
+                    t['class_labels'] = (v - 1).to(self.device)
                 elif k == 'boxes':
                     # Convert boxes from [x1, y1, x2, y2] to normalized [cx, cy, w, h]
                     boxes = v.to(self.device)
