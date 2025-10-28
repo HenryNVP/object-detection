@@ -63,8 +63,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--train-split",
         type=float,
-        default=0.8,
+        default=0.6,
         help="Train split ratio (0.0-1.0)",
+    )
+    parser.add_argument(
+        "--val-split",
+        type=float,
+        default=0.2,
+        help="Validation split ratio (0.0-1.0)",
+    )
+    parser.add_argument(
+        "--test-split",
+        type=float,
+        default=0.2,
+        help="Test split ratio (0.0-1.0)",
     )
     parser.add_argument(
         "--seed",
@@ -228,7 +240,15 @@ def main():
     print(f"KITTI root: {args.kitti_root}")
     print(f"Output dir: {args.output_dir}")
     print(f"Train split: {args.train_split}")
+    print(f"Val split: {args.val_split}")
+    print(f"Test split: {args.test_split}")
     print(f"Random seed: {args.seed}")
+    
+    # Validate splits sum to 1.0
+    total_split = args.train_split + args.val_split + args.test_split
+    if abs(total_split - 1.0) > 0.01:
+        raise ValueError(f"Splits must sum to 1.0, got {total_split:.2f}")
+    
     print("-" * 50)
     
     # Check if KITTI dataset exists
@@ -248,16 +268,20 @@ def main():
     
     print(f"Found {len(image_ids)} images")
     
-    # Split into train and val
+    # Split into train, val, and test
     random.seed(args.seed)
     random.shuffle(image_ids)
     
-    split_idx = int(len(image_ids) * args.train_split)
-    train_ids = image_ids[:split_idx]
-    val_ids = image_ids[split_idx:]
+    train_idx = int(len(image_ids) * args.train_split)
+    val_idx = int(len(image_ids) * (args.train_split + args.val_split))
     
-    print(f"Train samples: {len(train_ids)}")
-    print(f"Val samples: {len(val_ids)}")
+    train_ids = image_ids[:train_idx]
+    val_ids = image_ids[train_idx:val_idx]
+    test_ids = image_ids[val_idx:]
+    
+    print(f"Train samples: {len(train_ids)} ({len(train_ids)/len(image_ids)*100:.1f}%)")
+    print(f"Val samples: {len(val_ids)} ({len(val_ids)/len(image_ids)*100:.1f}%)")
+    print(f"Test samples: {len(test_ids)} ({len(test_ids)/len(image_ids)*100:.1f}%)")
     print()
     
     # Convert train split
@@ -298,16 +322,36 @@ def main():
     print(f"  - Annotations: {len(val_coco['annotations'])}")
     print()
     
+    # Convert test split
+    print("Converting test split...")
+    test_coco = convert_to_coco(
+        kitti_root=args.kitti_root,
+        output_dir=args.output_dir,
+        split="test",
+        image_ids=test_ids,
+    )
+    
+    # Save test annotations
+    test_ann_path = ann_dir / "instances_test.json"
+    with open(test_ann_path, "w") as f:
+        json.dump(test_coco, f)
+    print(f"Saved test annotations: {test_ann_path}")
+    print(f"  - Images: {len(test_coco['images'])}")
+    print(f"  - Annotations: {len(test_coco['annotations'])}")
+    print()
+    
     print("✅ Conversion complete!")
     print(f"\nOutput directory: {args.output_dir}")
     print("Directory structure:")
     print(f"{args.output_dir}/")
     print("  ├── images/")
     print("  │   ├── train/")
-    print("  │   └── val/")
+    print("  │   ├── val/")
+    print("  │   └── test/")
     print("  └── annotations/")
     print("      ├── instances_train.json")
-    print("      └── instances_val.json")
+    print("      ├── instances_val.json")
+    print("      └── instances_test.json")
 
 
 if __name__ == "__main__":
