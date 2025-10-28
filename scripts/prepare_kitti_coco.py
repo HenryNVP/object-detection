@@ -18,29 +18,31 @@ from PIL import Image
 from tqdm import tqdm
 
 
-# KITTI to COCO category mapping
-KITTI_TO_COCO = {
-    "Car": "car",
-    "Van": "car",
-    "Truck": "truck",
-    "Pedestrian": "person",
-    "Person_sitting": "person",
-    "Cyclist": "bicycle",
-    "Tram": "train",
-    "Misc": "other",
+# KITTI category mapping - Using original KITTI classes
+# Map KITTI classes to unified categories (keeping KITTI names)
+KITTI_CLASS_MAPPING = {
+    "Car": "Car",
+    "Van": "Car",  # Group with Car
+    "Truck": "Truck",
+    "Pedestrian": "Pedestrian",
+    "Person_sitting": "Pedestrian",  # Group with Pedestrian
+    "Cyclist": "Cyclist",
+    "Tram": "Tram",
+    "Misc": "Misc",
 }
 
-COCO_CATEGORIES = [
-    {"id": 1, "name": "person"},
-    {"id": 2, "name": "car"},
-    {"id": 3, "name": "truck"},
-    {"id": 4, "name": "bicycle"},
-    {"id": 5, "name": "train"},
-    {"id": 6, "name": "other"},
+# Define KITTI categories (no COCO mapping)
+KITTI_CATEGORIES = [
+    {"id": 1, "name": "Car"},
+    {"id": 2, "name": "Pedestrian"},
+    {"id": 3, "name": "Cyclist"},
+    {"id": 4, "name": "Truck"},
+    {"id": 5, "name": "Tram"},
+    {"id": 6, "name": "Misc"},
 ]
 
 # Create name to ID mapping for easy lookup
-CAT_NAME_TO_ID = {cat["name"]: cat["id"] for cat in COCO_CATEGORIES}
+CAT_NAME_TO_ID = {cat["name"]: cat["id"] for cat in KITTI_CATEGORIES}
 
 
 def parse_args() -> argparse.Namespace:
@@ -186,12 +188,12 @@ def convert_to_coco(
             obj_type = obj["type"]
             
             # Skip DontCare and unknown classes
-            if obj_type == "DontCare" or obj_type not in KITTI_TO_COCO:
+            if obj_type == "DontCare" or obj_type not in KITTI_CLASS_MAPPING:
                 continue
             
-            # Get COCO category ID
-            coco_cat_name = KITTI_TO_COCO[obj_type]
-            coco_cat_id = CAT_NAME_TO_ID[coco_cat_name]
+            # Get KITTI category ID (unified class name)
+            kitti_cat_name = KITTI_CLASS_MAPPING[obj_type]
+            kitti_cat_id = CAT_NAME_TO_ID[kitti_cat_name]
             
             # Get bounding box [x1, y1, x2, y2]
             x1, y1, x2, y2 = obj["bbox"]
@@ -208,24 +210,24 @@ def convert_to_coco(
             annotations.append({
                 "id": ann_id,
                 "image_id": img_id + 1,
-                "category_id": coco_cat_id,
+                "category_id": kitti_cat_id,
                 "bbox": [x1, y1, bbox_w, bbox_h],
                 "area": bbox_w * bbox_h,
                 "iscrowd": 0,
             })
             ann_id += 1
     
-    # Create COCO format dictionary
+    # Create COCO-style format dictionary (using KITTI class names)
     coco_dict = {
         "info": {
-            "description": f"KITTI {split} set in COCO format",
+            "description": f"KITTI {split} set in COCO format (KITTI class names)",
             "version": "1.0",
             "year": 2024,
         },
         "licenses": [],
         "images": images,
         "annotations": annotations,
-        "categories": COCO_CATEGORIES,
+        "categories": KITTI_CATEGORIES,
     }
     
     return coco_dict

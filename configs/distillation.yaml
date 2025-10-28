@@ -3,7 +3,7 @@
 # Dataset configuration
 data:
   root: "./kitti_coco"
-  num_labels: 6  # person, car, truck, bicycle, train, other
+  num_labels: 6  # Car, Pedestrian, Cyclist, Truck, Tram, Misc (KITTI classes)
   batch_size: 24
   num_workers: 4
 
