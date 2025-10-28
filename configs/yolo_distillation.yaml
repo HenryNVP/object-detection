@@ -1,0 +1,61 @@
+# YOLO Knowledge Distillation Configuration
+
+# Dataset
+data:
+  kitti_root: "./kitti_data/training"
+  yolo_dataset_root: "./kitti_yolo"
+  max_samples: 1000  # Use subset for fast training (set to -1 for full dataset)
+  train_split: 0.6
+  val_split: 0.2
+  test_split: 0.2
+  
+  # KITTI classes (6 classes)
+  classes:
+    - Car
+    - Pedestrian
+    - Cyclist
+    - Truck
+    - Tram
+    - Misc
+
+# Models
+models:
+  teacher: "yolov8m"  # Options: yolov8n, yolov8s, yolov8m, yolov8l, yolov8x
+  student: "yolov8n"  # Should be smaller than teacher
+  
+  # Model sizes for reference:
+  # yolov8n: 3.2M params  (smallest, fastest)
+  # yolov8s: 11.2M params
+  # yolov8m: 25.9M params (good balance)
+  # yolov8l: 43.7M params
+  # yolov8x: 68.2M params (largest, most accurate)
+
+# Training
+training:
+  img_size: 640
+  batch_size: 16       # Reduce if OOM (out of memory)
+  epochs_teacher: 30   # YOLO converges faster than DETR
+  epochs_student: 30
+  patience: 5          # Early stopping patience
+  device: "cuda"       # "cuda" or "cpu"
+
+# Knowledge Distillation
+distillation:
+  temperature: 3.0     # Higher = softer distributions (more teacher knowledge)
+  alpha: 0.5           # Weight for student loss (1-alpha for distillation loss)
+                       # alpha=1.0 → no distillation (baseline)
+                       # alpha=0.5 → equal weight
+                       # alpha=0.3 → more teacher influence
+
+# Output
+output:
+  dir: "./output/yolo_distillation"
+  save_plots: true
+  save_predictions: true
+
+# Optimization (optional)
+optimization:
+  augmentation: true   # Data augmentation
+  mixed_precision: true  # Use FP16 for faster training
+  workers: 4           # Number of dataloader workers
+
