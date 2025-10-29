@@ -33,12 +33,12 @@ KITTI_CLASS_MAPPING = {
 
 # Define KITTI categories (no COCO mapping)
 KITTI_CATEGORIES = [
-    {"id": 1, "name": "Car"},
-    {"id": 2, "name": "Pedestrian"},
-    {"id": 3, "name": "Cyclist"},
-    {"id": 4, "name": "Truck"},
-    {"id": 5, "name": "Tram"},
-    {"id": 6, "name": "Misc"},
+    {'id': 1, 'name': 'person'},
+    {'id': 2, 'name': 'car'},
+    {'id': 3, 'name': 'truck'},
+    {'id': 4, 'name': 'bicycle'},
+    {'id': 5, 'name': 'train'},
+    {'id': 6, 'name': 'other'},
 ]
 
 # Create name to ID mapping for easy lookup
