@@ -21,14 +21,14 @@ from tqdm import tqdm
 # KITTI category mapping - Using original KITTI classes
 # Map KITTI classes to unified categories (keeping KITTI names)
 KITTI_CLASS_MAPPING = {
-    "Car": "Car",
-    "Van": "Car",  # Group with Car
-    "Truck": "Truck",
-    "Pedestrian": "Pedestrian",
-    "Person_sitting": "Pedestrian",  # Group with Pedestrian
-    "Cyclist": "Cyclist",
-    "Tram": "Tram",
-    "Misc": "Misc",
+    'Car': 'car',
+    'Van': 'car',
+    'Truck': 'truck',
+    'Pedestrian': 'person',
+    'Person_sitting': 'person',
+    'Cyclist': 'bicycle',
+    'Tram': 'train',
+    'Misc': 'other'
 }
 
 # Define KITTI categories (no COCO mapping)
