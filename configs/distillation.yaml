@@ -4,8 +4,8 @@
 data:
   root: "./kitti_coco"
   num_labels: 6  # Car, Pedestrian, Cyclist, Truck, Tram, Misc (KITTI classes)
-  batch_size: 24
-  num_workers: 4
+  batch_size: 128
+  num_workers: 2
 
 # Model configuration
 model:
@@ -14,7 +14,7 @@ model:
 
 # Training configuration
 training:
-  epochs: 10
+  epochs: 20
   learning_rate: 1.0e-4
   weight_decay: 1.0e-4
   save_every: 1
