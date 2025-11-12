@@ -12,7 +12,7 @@ pycocotools>=2.0.6
 tqdm>=4.65.0
 pyyaml>=6.0
 
-# Optional but recommended
+# Optional
 tensorboard>=2.13.0
 matplotlib>=3.7.0
 opencv-python>=4.8.0
